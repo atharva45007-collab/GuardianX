@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GuardianX Security Dashboard</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Outfit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    html, body { height: 100%; margin: 0; }
+
+    :root {
+      --bg-primary: #060e1a;
+      --bg-surface: #0d1b2e;
+      --text-main: #c8d6e5;
+      --accent-green: #00ff9c;
+      --accent-red: #ff3b5c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-main);
+    }
+
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(0, 255, 156, 0.15); }
+      50% { box-shadow: 0 0 20px rgba(0, 255, 156, 0.35); }
+    }
+
+    @keyframes scanLine {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(400%); }
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .anim-fade-in {
+      animation: fadeSlideIn 0.5s ease forwards;
+      opacity: 0;
+    }
+
+    .pulse-border {
+      animation: pulseGlow 2.5s ease-in-out infinite;
+    }
+
+    .scan-line-anim {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scan-line-anim::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+      animation: scanLine 2s linear infinite;
+    }
+
+    .nav-btn {
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-btn:hover {
+      background: rgba(0, 255, 156, 0.06);
+      border-left-color: rgba(0, 255, 156, 0.3);
+    }
+
+    .nav-btn.active {
+      background: rgba(0, 255, 156, 0.1);
+      border-left-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid rgba(0, 255, 156, 0.1);
+      border-radius: 12px;
+      padding: 20px 24px;
+      transition: transform 0.2s ease, border-color 0.3s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 255, 156, 0.3);
+    }
+
+    .log-entry {
+      border-left: 2px solid rgba(0, 255, 156, 0.3);
+      padding: 8px 16px;
+      margin-bottom: 6px;
+      background: rgba(0, 255, 156, 0.03);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .risk-high { color: #ff3b5c; }
+    .risk-medium { color: #ffb347; }
+    .risk-safe { color: #00ff9c; }
+
+    .table-row {
+      border-bottom: 1px solid rgba(200, 214, 229, 0.07);
+      transition: background 0.15s ease;
+    }
+    .table-row:hover {
+      background: rgba(0, 255, 156, 0.04);
+    }
+
+    .progress-bar-track {
+      background: rgba(0, 255, 156, 0.1);
+      border-radius: 999px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 1.5s ease;
+    }
+
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: 500;
+      z-index: 1000;
+      animation: fadeSlideIn 0.3s ease forwards;
+      pointer-events: auto;
+    }
+
+    @keyframes typewriter {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    .btn-primary {
+      background: var(--accent-green);
+      color: #060e1a;
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .sidebar-mobile-toggle {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-mobile-toggle { display: flex; }
+      .sidebar-desktop { display: none; }
+      .sidebar-desktop.mobile-open { display: flex; position: fixed; top: 0; left: 0; z-index: 50; width: 260px; height: 100%; }
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="flex h-full w-full overflow-auto" style="background: var(--bg-primary);"><!-- Sidebar -->
+   <aside id="sidebar" class="sidebar-desktop flex flex-col w-64 min-w-[256px] h-full border-r border-white/5" style="background: var(--bg-surface);">
+    <div class="p-5 border-b border-white/5">
+     <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center pulse-border" style="background: rgba(0,255,156,0.12);"><i data-lucide="shield" style="width:20px;height:20px;color:var(--accent-green);"></i>
+      </div>
+      <div>
+       <h1 id="sidebar-title" class="text-lg font-bold" style="color:var(--accent-green);">GuardianX</h1>
+       <p id="sidebar-subtitle" class="text-xs" style="color: rgba(200,214,229,0.5);">Security Dashboard</p>
+      </div>
+     </div>
+    </div>
+    <nav class="flex-1 py-4 px-3 flex flex-col gap-1" id="nav-container"><button class="nav-btn active w-full text-left px-4 py-3 rounded-lg text-sm flex items-center gap-3" data-page="home" onclick="switchPage('home')"> <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Home </button> <button class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm flex items-center gap-3" data-page="ransomware" onclick="switchPage('ransomware')"> <i data-lucide="bug" style="width:18px;height:18px;"></i> Ransomware Detection </button> <button class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm flex items-center gap-3" data-page="dataleak" onclick="switchPage('dataleak')"> <i data-lucide="search" style="width:18px;height:18px;"></i> Data Leak Check </button> <button class="nav-btn w-full text-left px-4 py-3 rounded-lg text-sm flex items-center gap-3" data-page="reports" onclick="switchPage('reports')"> <i data-lucide="bar-chart-3" style="width:18px;height:18px;"></i> Reports </button>
+    </nav>
+    <div class="p-4 border-t border-white/5">
+     <div class="flex items-center gap-2 text-xs" style="color: rgba(200,214,229,0.4);">
+      <div class="w-2 h-2 rounded-full" style="background: var(--accent-green); box-shadow: 0 0 6px rgba(0,255,156,0.5);"></div> System Monitoring Active
+     </div>
+    </div>
+   </aside><!-- Mobile Header -->
+   <div class="sidebar-mobile-toggle fixed top-0 left-0 right-0 z-40 items-center justify-between px-4 py-3 border-b border-white/5" style="background: var(--bg-surface);"><button onclick="toggleMobileSidebar()" class="p-2 rounded-lg" style="color: var(--accent-green);"> <i data-lucide="menu" style="width:22px;height:22px;"></i> </button> <span class="text-sm font-semibold" style="color:var(--accent-green);">GuardianX</span>
+    <div class="w-8"></div>
+   </div><!-- Main Content -->
+   <main class="flex-1 overflow-auto" style="background: var(--bg-primary);">
+    <div class="p-6 md:p-8 max-w-6xl mx-auto w-full"><!-- Page: Home -->
+     <section id="page-home" class="page-section">
+      <div class="mb-8 anim-fade-in" style="animation-delay: 0.05s;">
+       <h2 id="home-title" class="text-2xl font-bold mb-1" style="color: var(--accent-green);">Security Dashboard</h2>
+       <p id="home-subtitle" class="text-sm" style="color: rgba(200,214,229,0.5);">Your Shield Against Ransomware &amp; Data Leaks</p>
+      </div><!-- Metrics -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+       <div class="metric-card anim-fade-in" style="animation-delay:0.1s;">
+        <div class="flex items-center gap-3 mb-3">
+         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(0,255,156,0.1);"><i data-lucide="scan" style="width:16px;height:16px;color:var(--accent-green);"></i>
+         </div><span class="text-xs uppercase tracking-wider" style="color: rgba(200,214,229,0.45);">Threats Scanned Today</span>
+        </div>
+        <p class="text-3xl font-bold font-mono" style="color: var(--accent-green);">1,245</p>
+       </div>
+       <div class="metric-card anim-fade-in" style="animation-delay:0.2s;">
+        <div class="flex items-center gap-3 mb-3">
+         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,59,92,0.1);"><i data-lucide="alert-triangle" style="width:16px;height:16px;color:var(--accent-red);"></i>
+         </div><span class="text-xs uppercase tracking-wider" style="color: rgba(200,214,229,0.45);">Ransomware Detected</span>
+        </div>
+        <p class="text-3xl font-bold font-mono" style="color: var(--accent-red);">2</p>
+       </div>
+       <div class="metric-card anim-fade-in" style="animation-delay:0.3s;">
+        <div class="flex items-center gap-3 mb-3">
+         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,179,71,0.1);"><i data-lucide="database" style="width:16px;height:16px;color:#ffb347;"></i>
+         </div><span class="text-xs uppercase tracking-wider" style="color: rgba(200,214,229,0.45);">Data Leaks Found</span>
+        </div>
+        <p class="text-3xl font-bold font-mono" style="color: #ffb347;">1</p>
+       </div>
+      </div><!-- System Status -->
+      <div class="metric-card mb-6 anim-fade-in" style="animation-delay:0.35s;">
+       <div class="flex items-center gap-3 mb-4"><i data-lucide="activity" style="width:18px;height:18px;color:var(--accent-green);"></i>
+        <h3 class="font-semibold" style="color: var(--accent-green);">System Status</h3>
+       </div>
+       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+         <div class="flex justify-between text-xs mb-1.5"><span style="color: rgba(200,214,229,0.6);">Firewall</span> <span style="color:var(--accent-green);">Active</span>
+         </div>
+         <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width:98%;background:var(--accent-green);"></div>
+         </div>
+        </div>
+        <div>
+         <div class="flex justify-between text-xs mb-1.5"><span style="color: rgba(200,214,229,0.6);">Threat Database</span> <span style="color:var(--accent-green);">Updated</span>
+         </div>
+         <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width:100%;background:var(--accent-green);"></div>
+         </div>
+        </div>
+        <div>
+         <div class="flex justify-between text-xs mb-1.5"><span style="color: rgba(200,214,229,0.6);">Network Monitor</span> <span style="color:#ffb347;">87%</span>
+         </div>
+         <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width:87%;background:#ffb347;"></div>
+         </div>
+        </div>
+        <div>
+         <div class="flex justify-between text-xs mb-1.5"><span style="color: rgba(200,214,229,0.6);">Encryption Guard</span> <span style="color:var(--accent-green);">Active</span>
+         </div>
+         <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width:95%;background:var(--accent-green);"></div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Live Logs -->
+      <div class="metric-card anim-fade-in" style="animation-delay:0.45s;">
+       <div class="flex items-center gap-3 mb-4"><i data-lucide="terminal" style="width:18px;height:18px;color:var(--accent-green);"></i>
+        <h3 class="font-semibold" style="color: var(--accent-green);">Live Security Logs</h3>
+        <div class="ml-auto w-2 h-2 rounded-full" style="background:var(--accent-green);box-shadow:0 0 6px rgba(0,255,156,0.6);"></div>
+       </div>
+       <div id="log-container" class="font-mono text-xs space-y-0" style="color: rgba(200,214,229,0.65); max-height: 180px; overflow-y: auto;"></div>
+      </div>
+     </section><!-- Page: Ransomware Detection -->
+     <section id="page-ransomware" class="page-section hidden">
+      <div class="mb-8 anim-fade-in">
+       <h2 class="text-2xl font-bold mb-1" style="color: var(--accent-green);">Ransomware Detection</h2>
+       <p class="text-sm" style="color: rgba(200,214,229,0.5);">Scan your system to detect suspicious encryption activity</p>
+      </div>
+      <div class="metric-card mb-6 anim-fade-in" style="animation-delay:0.1s;">
+       <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: rgba(255,59,92,0.1); border: 1px solid rgba(255,59,92,0.2);"><i data-lucide="shield-alert" style="width:22px;height:22px;color:var(--accent-red);"></i>
+        </div>
+        <div>
+         <h3 class="font-semibold">File System Scanner</h3>
+         <p class="text-xs" style="color: rgba(200,214,229,0.45);">Analyzes encryption patterns &amp; suspicious behavior</p>
+        </div>
+       </div><button id="scan-btn" class="btn-primary flex items-center gap-2" onclick="startScan()"> <i data-lucide="play" style="width:16px;height:16px;"></i> Start Scan </button>
+       <div id="scan-progress" class="hidden mt-6">
+        <div class="flex justify-between text-xs mb-2"><span style="color: rgba(200,214,229,0.6);">Scanning files...</span> <span id="scan-pct" class="font-mono" style="color:var(--accent-green);">0%</span>
+        </div>
+        <div class="progress-bar-track" style="height:8px;">
+         <div id="scan-bar" class="progress-bar-fill" style="width:0%;background:var(--accent-green);transition:width 0.3s ease;"></div>
+        </div>
+        <div id="scan-log" class="mt-4 font-mono text-xs space-y-1" style="color: rgba(200,214,229,0.55);"></div>
+       </div>
+       <div id="scan-result" class="hidden mt-6"></div>
+      </div><!-- Recent Threats -->
+      <div class="metric-card anim-fade-in" style="animation-delay:0.2s;">
+       <h3 class="font-semibold mb-4" style="color: var(--accent-green);">Recent Threat History</h3>
+       <div class="space-y-3">
+        <div class="flex items-center justify-between p-3 rounded-lg" style="background: rgba(255,59,92,0.06); border: 1px solid rgba(255,59,92,0.15);">
+         <div class="flex items-center gap-3"><i data-lucide="file-warning" style="width:16px;height:16px;color:var(--accent-red);"></i>
+          <div>
+           <p class="text-sm font-medium">LockBit 3.0 Variant</p>
+           <p class="text-xs" style="color: rgba(200,214,229,0.4);">Detected 2 hours ago</p>
+          </div>
+         </div><span class="text-xs px-2 py-1 rounded-full font-medium" style="background: rgba(255,59,92,0.15); color: var(--accent-red);">Quarantined</span>
+        </div>
+        <div class="flex items-center justify-between p-3 rounded-lg" style="background: rgba(255,179,71,0.06); border: 1px solid rgba(255,179,71,0.15);">
+         <div class="flex items-center gap-3"><i data-lucide="file-warning" style="width:16px;height:16px;color:#ffb347;"></i>
+          <div>
+           <p class="text-sm font-medium">Suspicious Encryption</p>
+           <p class="text-xs" style="color: rgba(200,214,229,0.4);">Detected 5 hours ago</p>
+          </div>
+         </div><span class="text-xs px-2 py-1 rounded-full font-medium" style="background: rgba(255,179,71,0.15); color: #ffb347;">Investigating</span>
+        </div>
+       </div>
+      </div>
+     </section><!-- Page: Data Leak Check -->
+     <section id="page-dataleak" class="page-section hidden">
+      <div class="mb-8 anim-fade-in">
+       <h2 class="text-2xl font-bold mb-1" style="color: var(--accent-green);">Data Leak Scanner</h2>
+       <p class="text-sm" style="color: rgba(200,214,229,0.5);">Check if sensitive files are exposed or at risk</p>
+      </div>
+      <div class="metric-card anim-fade-in" style="animation-delay:0.1s;">
+       <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+         <thead>
+          <tr class="text-left text-xs uppercase tracking-wider" style="color: rgba(200,214,229,0.4);">
+           <th class="pb-3 pr-4">File Name</th>
+           <th class="pb-3 pr-4">Type</th>
+           <th class="pb-3 pr-4">Size</th>
+           <th class="pb-3 pr-4">Risk Level</th>
+           <th class="pb-3">Status</th>
+          </tr>
+         </thead>
+         <tbody>
+          <tr class="table-row">
+           <td class="py-3 pr-4 flex items-center gap-2"><i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:var(--accent-red);"></i> <span class="font-mono text-xs">customer_data.csv</span></td>
+           <td class="py-3 pr-4 text-xs" style="color:rgba(200,214,229,0.5);">CSV</td>
+           <td class="py-3 pr-4 text-xs font-mono" style="color:rgba(200,214,229,0.5);">24.3 MB</td>
+           <td class="py-3 pr-4"><span class="risk-high text-xs font-semibold">● High</span></td>
+           <td class="py-3"><span class="text-xs px-2 py-1 rounded-full" style="background:rgba(255,59,92,0.12);color:var(--accent-red);">Exposed</span></td>
+          </tr>
+          <tr class="table-row">
+           <td class="py-3 pr-4 flex items-center gap-2"><i data-lucide="file-lock" style="width:14px;height:14px;color:#ffb347;"></i> <span class="font-mono text-xs">passwords.txt</span></td>
+           <td class="py-3 pr-4 text-xs" style="color:rgba(200,214,229,0.5);">TXT</td>
+           <td class="py-3 pr-4 text-xs font-mono" style="color:rgba(200,214,229,0.5);">1.2 KB</td>
+           <td class="py-3 pr-4"><span class="risk-medium text-xs font-semibold">● Medium</span></td>
+           <td class="py-3"><span class="text-xs px-2 py-1 rounded-full" style="background:rgba(255,179,71,0.12);color:#ffb347;">Review</span></td>
+          </tr>
+          <tr class="table-row">
+           <td class="py-3 pr-4 flex items-center gap-2"><i data-lucide="file-text" style="width:14px;height:14px;color:var(--accent-green);"></i> <span class="font-mono text-xs">finance_report.pdf</span></td>
+           <td class="py-3 pr-4 text-xs" style="color:rgba(200,214,229,0.5);">PDF</td>
+           <td class="py-3 pr-4 text-xs font-mono" style="color:rgba(200,214,229,0.5);">8.7 MB</td>
+           <td class="py-3 pr-4"><span class="risk-safe text-xs font-semibold">● Safe</span></td>
+           <td class="py-3"><span class="text-xs px-2 py-1 rounded-full" style="background:rgba(0,255,156,0.12);color:var(--accent-green);">Secured</span></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div><!-- Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+       <div class="metric-card text-center anim-fade-in" style="animation-delay:0.2s;">
+        <p class="text-2xl font-bold font-mono" style="color:var(--accent-red);">1</p>
+        <p class="text-xs mt-1" style="color:rgba(200,214,229,0.45);">High Risk Files</p>
+       </div>
+       <div class="metric-card text-center anim-fade-in" style="animation-delay:0.3s;">
+        <p class="text-2xl font-bold font-mono" style="color:#ffb347;">1</p>
+        <p class="text-xs mt-1" style="color:rgba(200,214,229,0.45);">Medium Risk Files</p>
+       </div>
+       <div class="metric-card text-center anim-fade-in" style="animation-delay:0.4s;">
+        <p class="text-2xl font-bold font-mono" style="color:var(--accent-green);">1</p>
+        <p class="text-xs mt-1" style="color:rgba(200,214,229,0.45);">Safe Files</p>
+       </div>
+      </div>
+     </section><!-- Page: Reports -->
+     <section id="page-reports" class="page-section hidden">
+      <div class="mb-8 anim-fade-in">
+       <h2 class="text-2xl font-bold mb-1" style="color: var(--accent-green);">Security Reports</h2>
+       <p class="text-sm" style="color: rgba(200,214,229,0.5);">Generate and download system security reports</p>
+      </div>
+      <div class="metric-card mb-6 anim-fade-in" style="animation-delay:0.1s;">
+       <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: rgba(0,255,156,0.1); border: 1px solid rgba(0,255,156,0.2);"><i data-lucide="file-check" style="width:22px;height:22px;color:var(--accent-green);"></i>
+        </div>
+        <div>
+         <h3 class="font-semibold">Report Generator</h3>
+         <p class="text-xs" style="color: rgba(200,214,229,0.45);">Compile a full security summary</p>
+        </div>
+       </div><button id="report-btn" class="btn-primary flex items-center gap-2" onclick="generateReport()"> <i data-lucide="file-plus" style="width:16px;height:16px;"></i> Generate Report </button>
+       <div id="report-result" class="hidden mt-6">
+        <div class="p-4 rounded-lg font-mono text-xs" style="background: rgba(0,255,156,0.04); border: 1px solid rgba(0,255,156,0.15); color: rgba(200,214,229,0.7);">
+         <pre id="report-preview" style="white-space: pre-wrap;"></pre>
+        </div><button id="download-btn" class="btn-primary mt-4 flex items-center gap-2" onclick="downloadReport()"> <i data-lucide="download" style="width:16px;height:16px;"></i> Download Report </button>
+       </div>
+      </div><!-- Report History -->
+      <div class="metric-card anim-fade-in" style="animation-delay:0.2s;">
+       <h3 class="font-semibold mb-4" style="color: var(--accent-green);">Report History</h3>
+       <div id="report-history" class="space-y-2">
+        <p class="text-xs" style="color: rgba(200,214,229,0.35);">No reports generated yet</p>
+       </div>
+      </div>
+     </section>
+    </div>
+   </main>
+  </div><!-- Toast Container -->
+  <div id="toast-container"></div>
+  <script>
+    // ---- State ----
+    let currentPage = 'home';
+    let logInterval = null;
+    const reportHistory = [];
+
+    const defaultConfig = {
+      background_color: '#060e1a',
+      surface_color: '#0d1b2e',
+      text_color: '#c8d6e5',
+      accent_color: '#00ff9c',
+      secondary_accent_color: '#ff3b5c',
+      font_family: 'Outfit',
+      font_size: 16,
+      app_title: 'GuardianX',
+      app_subtitle: 'Your Shield Against Ransomware & Data Leaks'
+    };
+
+    // ---- Element SDK ----
+    function applyConfig(config) {
+      const bg = config.background_color || defaultConfig.background_color;
+      const surface = config.surface_color || defaultConfig.surface_color;
+      const text = config.text_color || defaultConfig.text_color;
+      const accent = config.accent_color || defaultConfig.accent_color;
+      const accent2 = config.secondary_accent_color || defaultConfig.secondary_accent_color;
+      const font = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+      const title = config.app_title || defaultConfig.app_title;
+      const subtitle = config.app_subtitle || defaultConfig.app_subtitle;
+
+      document.documentElement.style.setProperty('--bg-primary', bg);
+      document.documentElement.style.setProperty('--bg-surface', surface);
+      document.documentElement.style.setProperty('--text-main', text);
+      document.documentElement.style.setProperty('--accent-green', accent);
+      document.documentElement.style.setProperty('--accent-red', accent2);
+
+      const wrapper = document.getElementById('app-wrapper');
+      if (wrapper) wrapper.style.background = bg;
+
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.style.background = surface;
+
+      const mainEl = document.querySelector('main');
+      if (mainEl) mainEl.style.background = bg;
+
+      // Font
+      const baseFontStack = 'Arial, sans-serif';
+      document.body.style.fontFamily = `${font}, ${baseFontStack}`;
+
+      // Font size
+      const base = fontSize;
+      document.querySelectorAll('h2').forEach(el => el.style.fontSize = `${base * 1.6}px`);
+      document.querySelectorAll('h3').forEach(el => el.style.fontSize = `${base * 1.15}px`);
+      document.querySelectorAll('p, span, td, th, button, .text-sm').forEach(el => {
+        if (!el.closest('.font-mono') && !el.classList.contains('font-mono')) {
+          // Don't override very small utility text
+        }
+      });
+
+      // Text content
+      const sidebarTitle = document.getElementById('sidebar-title');
+      if (sidebarTitle) sidebarTitle.textContent = title;
+      sidebarTitle && (sidebarTitle.style.color = accent);
+
+      const sidebarSub = document.getElementById('sidebar-subtitle');
+      if (sidebarSub) sidebarSub.textContent = 'Security Dashboard';
+
+      const homeTitle = document.getElementById('home-title');
+      if (homeTitle) {
+        homeTitle.textContent = 'Security Dashboard';
+        homeTitle.style.color = accent;
+      }
+
+      const homeSub = document.getElementById('home-subtitle');
+      if (homeSub) homeSub.textContent = subtitle;
+
+      // Recolor metric cards
+      document.querySelectorAll('.metric-card').forEach(c => {
+        c.style.background = surface;
+        c.style.borderColor = `${accent}1a`;
+      });
+
+      // Recolor nav active
+      document.querySelectorAll('.nav-btn.active').forEach(b => {
+        b.style.color = accent;
+        b.style.borderLeftColor = accent;
+      });
+
+      // Buttons
+      document.querySelectorAll('.btn-primary').forEach(b => {
+        b.style.background = accent;
+        b.style.color = bg;
+      });
+
+      // Safe color updates
+      document.querySelectorAll('.risk-safe').forEach(el => el.style.color = accent);
+
+      // Progress fills that are green
+      document.querySelectorAll('.progress-bar-fill').forEach(el => {
+        const cur = el.style.background;
+        if (cur.includes('00ff9c') || cur === 'var(--accent-green)') {
+          el.style.background = accent;
+        }
+      });
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => { applyConfig(config); },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
+            },
+            {
+              get: () => config.accent_color || defaultConfig.accent_color,
+              set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }
+            },
+            {
+              get: () => config.secondary_accent_color || defaultConfig.secondary_accent_color,
+              set: (v) => { config.secondary_accent_color = v; window.elementSdk.setConfig({ secondary_accent_color: v }); }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['app_title', config.app_title || defaultConfig.app_title],
+          ['app_subtitle', config.app_subtitle || defaultConfig.app_subtitle]
+        ])
+      });
+    }
+
+    // ---- Navigation ----
+    function switchPage(page) {
+      currentPage = page;
+      document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById('page-' + page).classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.color = '';
+        b.style.borderLeftColor = 'transparent';
+      });
+      const activeBtn = document.querySelector(`.nav-btn[data-page="${page}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        const accent = (window.elementSdk && window.elementSdk.config.accent_color) || defaultConfig.accent_color;
+        activeBtn.style.color = accent;
+        activeBtn.style.borderLeftColor = accent;
+      }
+
+      // Close mobile sidebar
+      document.getElementById('sidebar').classList.remove('mobile-open');
+
+      // Start logs on home
+      if (page === 'home') startLogs();
+      else stopLogs();
+    }
+
+    function toggleMobileSidebar() {
+      document.getElementById('sidebar').classList.toggle('mobile-open');
+    }
+
+    // ---- Live Logs ----
+    const logMessages = [
+      'Scanning file system for anomalies...',
+      'Checking outbound network traffic...',
+      'Analyzing process encryption patterns...',
+      'Monitoring registry modifications...',
+      'Inspecting DLL injection vectors...',
+      'Verifying file integrity checksums...',
+      'Checking for privilege escalation attempts...',
+      'Scanning memory for malicious payloads...',
+      'Monitoring API call patterns...',
+      'Validating certificate chain trust...',
+      'Checking DNS resolution anomalies...',
+      'Inspecting scheduled task modifications...',
+    ];
+
+    function startLogs() {
+      stopLogs();
+      const container = document.getElementById('log-container');
+      if (!container) return;
+
+      let idx = 0;
+      function addLog() {
+        const now = new Date();
+        const ts = now.toLocaleTimeString('en-US', { hour12: false });
+        const msg = logMessages[idx % logMessages.length];
+        const entry = document.createElement('div');
+        entry.className = 'log-entry anim-fade-in';
+        entry.innerHTML = `<span style="color:var(--accent-green);opacity:0.6;">[${ts}]</span> ${msg}`;
+        container.appendChild(entry);
+        container.scrollTop = container.scrollHeight;
+
+        // Keep max 20 entries
+        while (container.children.length > 20) {
+          container.removeChild(container.firstChild);
+        }
+        idx++;
+      }
+
+      // Initial batch
+      for (let i = 0; i < 4; i++) {
+        setTimeout(() => addLog(), i * 200);
+      }
+
+      logInterval = setInterval(addLog, 3000);
+    }
+
+    function stopLogs() {
+      if (logInterval) { clearInterval(logInterval); logInterval = null; }
+    }
+
+    // ---- Ransomware Scanner ----
+    function startScan() {
+      const btn = document.getElementById('scan-btn');
+      const progress = document.getElementById('scan-progress');
+      const result = document.getElementById('scan-result');
+      const bar = document.getElementById('scan-bar');
+      const pct = document.getElementById('scan-pct');
+      const scanLog = document.getElementById('scan-log');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" style="width:16px;height:16px;" class="animate-spin"></i> Scanning...';
+      progress.classList.remove('hidden');
+      result.classList.add('hidden');
+      scanLog.innerHTML = '';
+
+      const scanSteps = [
+        'Initializing scan engine...',
+        'Scanning system32 directory...',
+        'Checking user documents...',
+        'Analyzing running processes...',
+        'Inspecting network connections...',
+        'Checking encryption activity...',
+        'Anomaly detected in process 0x4F2A...',
+        'Correlating threat signatures...',
+      ];
+
+      let step = 0;
+      let progress_val = 0;
+
+      const interval = setInterval(() => {
+        progress_val += Math.random() * 15 + 5;
+        if (progress_val > 100) progress_val = 100;
+        bar.style.width = progress_val + '%';
+        pct.textContent = Math.round(progress_val) + '%';
+
+        if (step < scanSteps.length) {
+          const entry = document.createElement('div');
+          entry.className = 'anim-fade-in';
+          entry.innerHTML = `<span style="color:var(--accent-green);opacity:0.5;">›</span> ${scanSteps[step]}`;
+          scanLog.appendChild(entry);
+          step++;
+        }
+
+        if (progress_val >= 100) {
+          clearInterval(interval);
+          setTimeout(() => showScanResult(), 500);
+        }
+      }, 400);
+
+      function showScanResult() {
+        const accent2 = (window.elementSdk && window.elementSdk.config.secondary_accent_color) || defaultConfig.secondary_accent_color;
+        result.classList.remove('hidden');
+        result.innerHTML = `
+          <div class="p-4 rounded-lg anim-fade-in" style="background: rgba(255,59,92,0.08); border: 1px solid rgba(255,59,92,0.25);">
+            <div class="flex items-center gap-3 mb-3">
+              <i data-lucide="alert-octagon" style="width:22px;height:22px;color:${accent2};"></i>
+              <h4 class="font-semibold" style="color:${accent2};">Ransomware Activity Detected!</h4>
+            </div>
+            <p class="text-sm mb-2" style="color: rgba(200,214,229,0.7);">Suspicious file encryption behavior identified in process <code class="font-mono text-xs px-1 py-0.5 rounded" style="background:rgba(255,59,92,0.12);">svchost_x42.exe</code></p>
+            <p class="text-xs" style="color: rgba(200,214,229,0.45);">The threat has been automatically quarantined. Review your threat history for details.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="play" style="width:16px;height:16px;"></i> Scan Again';
+        lucide.createIcons();
+      }
+    }
+
+    // ---- Reports ----
+    let reportText = '';
+    function generateReport() {
+      const btn = document.getElementById('report-btn');
+      const result = document.getElementById('report-result');
+      const preview = document.getElementById('report-preview');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" style="width:16px;height:16px;" class="animate-spin"></i> Generating...';
+
+      setTimeout(() => {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-US', { hour12: true });
+        const title = (window.elementSdk && window.elementSdk.config.app_title) || defaultConfig.app_title;
+
+        reportText = `═══════════════════════════════════
+  ${title} Security Report
+  Generated: ${dateStr} at ${timeStr}
+═══════════════════════════════════
+
+SUMMARY
+───────────────────────────────────
+  Threats Scanned:     1,245
+  Ransomware Detected: 2
+  Data Leak Alerts:    1
+  System Status:       SECURE
+
+THREAT DETAILS
+───────────────────────────────────
+  [HIGH] LockBit 3.0 Variant
+         Status: Quarantined
+         Time:   2 hours ago
+
+  [MED]  Suspicious Encryption
+         Status: Under Investigation
+         Time:   5 hours ago
+
+DATA LEAK STATUS
+───────────────────────────────────
+  customer_data.csv   → HIGH RISK
+  passwords.txt       → MEDIUM RISK
+  finance_report.pdf  → SAFE
+
+SYSTEM HEALTH
+───────────────────────────────────
+  Firewall:          Active (98%)
+  Threat Database:   Updated (100%)
+  Network Monitor:   Active (87%)
+  Encryption Guard:  Active (95%)
+
+═══════════════════════════════════
+  End of Report
+═══════════════════════════════════`;
+
+        preview.textContent = reportText;
+        result.classList.remove('hidden');
+
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="file-plus" style="width:16px;height:16px;"></i> Generate Report';
+        lucide.createIcons();
+
+        // Add to history
+        reportHistory.unshift({ date: dateStr, time: timeStr });
+        updateReportHistory();
+
+        showToast('Report generated successfully', 'success');
+      }, 1500);
+    }
+
+    function downloadReport() {
+      if (!reportText) return;
+      const blob = new Blob([reportText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'guardianx_report.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Report downloaded', 'success');
+    }
+
+    function updateReportHistory() {
+      const container = document.getElementById('report-history');
+      if (reportHistory.length === 0) {
+        container.innerHTML = '<p class="text-xs" style="color: rgba(200,214,229,0.35);">No reports generated yet</p>';
+        return;
+      }
+      container.innerHTML = reportHistory.slice(0, 5).map((r, i) => `
+        <div class="flex items-center justify-between p-3 rounded-lg anim-fade-in" style="background: rgba(0,255,156,0.04); border: 1px solid rgba(0,255,156,0.1); animation-delay: ${i * 0.05}s;">
+          <div class="flex items-center gap-3">
+            <i data-lucide="file-text" style="width:14px;height:14px;color:var(--accent-green);"></i>
+            <span class="text-sm">Security Report</span>
+          </div>
+          <span class="text-xs" style="color: rgba(200,214,229,0.4);">${r.date} ${r.time}</span>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // ---- Toast ----
+    function showToast(message, type) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const accent = (window.elementSdk && window.elementSdk.config.accent_color) || defaultConfig.accent_color;
+      const bgColor = type === 'success' ? accent : 'var(--accent-red)';
+      const textColor = type === 'success' ? '#060e1a' : '#fff';
+
+      toast.className = 'toast-msg';
+      toast.style.background = bgColor;
+      toast.style.color = textColor;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // ---- Init ----
+    lucide.createIcons();
+    startLogs();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9dc578a094df3984',t:'MTc3MzUxNDMwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
