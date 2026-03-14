@@ -1,168 +1,112 @@
-import sys
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QTabWidget, QVBoxLayout,
-    QLabel, QPushButton, QMessageBox, QTableWidget,
-    QTableWidgetItem, QHBoxLayout
+import streamlit as st
+import pandas as pd
+import time
+
+# Page configuration
+st.set_page_config(
+    page_title="GuardianX",
+    page_icon="🛡",
+    layout="wide"
 )
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
 
+# Theme styling
+st.markdown("""
+<style>
+body {
+    background-color: #0a1a2f;
+}
+.main-title {
+    color: #00ff9c;
+    text-align: center;
+}
+</style>
+""", unsafe_allow_html=True)
 
-class GuardianX(QWidget):
+# Title and Tagline
+st.markdown("<h1 class='main-title'>🛡 GuardianX</h1>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align:center;'>Your Shield Against Ransomware & Data Leaks</h4>", unsafe_allow_html=True)
 
-    def __init__(self):
-        super().__init__()
+# Navigation Menu
+menu = st.sidebar.radio(
+    "Navigation",
+    ["Home", "Ransomware Detection", "Data Leak Check", "Reports"]
+)
 
-        self.setWindowTitle("GuardianX - Cybersecurity Dashboard")
-        self.setGeometry(200, 100, 900, 600)
+# ---------------- HOME ----------------
+if menu == "Home":
 
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #0b1f3a;
-                color: white;
-                font-family: Arial;
-            }
+    st.header("Security Dashboard")
 
-            QPushButton {
-                background-color: #00ff9c;
-                color: black;
-                padding: 8px;
-                font-weight: bold;
-            }
+    col1, col2, col3 = st.columns(3)
 
-            QPushButton:hover {
-                background-color: #00cc7a;
-            }
-        """)
+    col1.metric("Threats Scanned Today", "1,245")
+    col2.metric("Ransomware Detected", "2")
+    col3.metric("Data Leaks Found", "1")
 
-        layout = QVBoxLayout()
+    st.subheader("System Status")
+    st.success("System Monitoring Active")
 
-        title = QLabel("🛡 GuardianX")
-        title.setFont(QFont("Arial", 22, QFont.Bold))
-        title.setAlignment(Qt.AlignCenter)
+    st.subheader("Live Security Logs")
 
-        tagline = QLabel("Your Shield Against Ransomware & Data Leaks")
-        tagline.setAlignment(Qt.AlignCenter)
+    logs = [
+        "Scanning files...",
+        "Monitoring network traffic...",
+        "Analyzing suspicious behavior...",
+        "Protection system active..."
+    ]
 
-        layout.addWidget(title)
-        layout.addWidget(tagline)
+    for log in logs:
+        st.write(log)
+        time.sleep(0.3)
 
-        self.tabs = QTabWidget()
+# ---------------- RANSOMWARE DETECTION ----------------
+elif menu == "Ransomware Detection":
 
-        self.tabs.addTab(self.home_tab(), "Home")
-        self.tabs.addTab(self.ransomware_tab(), "Ransomware Detection")
-        self.tabs.addTab(self.leak_tab(), "Data Leak Check")
-        self.tabs.addTab(self.report_tab(), "Reports")
+    st.header("Ransomware Detection System")
 
-        layout.addWidget(self.tabs)
+    if st.button("Start Scan"):
 
-        self.setLayout(layout)
+        with st.spinner("Scanning system..."):
+            time.sleep(2)
 
-    # ---------------- HOME TAB ----------------
+        st.error("⚠️ Ransomware activity detected!")
 
-    def home_tab(self):
-        tab = QWidget()
-        layout = QVBoxLayout()
+        st.write("Suspicious file encryption behavior identified.")
 
-        status = QLabel("System Status: Monitoring Files and Network Activity")
-        status.setFont(QFont("Arial", 14))
+# ---------------- DATA LEAK CHECK ----------------
+elif menu == "Data Leak Check":
 
-        threats = QLabel("Threats Scanned Today: 1245")
-        ransomware = QLabel("Ransomware Detected: 2")
-        leaks = QLabel("Data Leaks Found: 1")
+    st.header("Data Leak Scanner")
 
-        layout.addWidget(status)
-        layout.addWidget(threats)
-        layout.addWidget(ransomware)
-        layout.addWidget(leaks)
+    data = {
+        "File Name": ["customer_data.csv", "passwords.txt", "finance_report.pdf"],
+        "Risk Level": ["🔴 High", "🟡 Medium", "🟢 Safe"]
+    }
 
-        tab.setLayout(layout)
+    df = pd.DataFrame(data)
 
-        return tab
+    st.table(df)
 
-    # ---------------- RANSOMWARE TAB ----------------
+# ---------------- REPORTS ----------------
+elif menu == "Reports":
 
-    def ransomware_tab(self):
-        tab = QWidget()
-        layout = QVBoxLayout()
+    st.header("Security Reports")
 
-        label = QLabel("Run a scan to detect ransomware activity")
+    if st.button("Generate Report"):
 
-        scan_btn = QPushButton("Start Scan")
-        scan_btn.clicked.connect(self.ransomware_alert)
+        st.success("Report Generated Successfully")
 
-        layout.addWidget(label)
-        layout.addWidget(scan_btn)
+        report = """
+GuardianX Security Report
 
-        tab.setLayout(layout)
+Threats Scanned Today: 1245
+Ransomware Detected: 2
+Data Leak Alerts: 1
+System Status: Secure
+"""
 
-        return tab
-
-    def ransomware_alert(self):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("Security Alert")
-        msg.setText("⚠️ Ransomware Activity Detected!")
-        msg.setInformativeText("Suspicious file encryption behavior identified.")
-        msg.exec_()
-
-    # ---------------- DATA LEAK TAB ----------------
-
-    def leak_tab(self):
-        tab = QWidget()
-        layout = QVBoxLayout()
-
-        table = QTableWidget()
-        table.setRowCount(3)
-        table.setColumnCount(2)
-
-        table.setHorizontalHeaderLabels(["File Name", "Risk Level"])
-
-        table.setItem(0, 0, QTableWidgetItem("customer_data.csv"))
-        table.setItem(0, 1, QTableWidgetItem("HIGH"))
-
-        table.setItem(1, 0, QTableWidgetItem("passwords.txt"))
-        table.setItem(1, 1, QTableWidgetItem("MEDIUM"))
-
-        table.setItem(2, 0, QTableWidgetItem("report.pdf"))
-        table.setItem(2, 1, QTableWidgetItem("SAFE"))
-
-        layout.addWidget(table)
-
-        tab.setLayout(layout)
-
-        return tab
-
-    # ---------------- REPORT TAB ----------------
-
-    def report_tab(self):
-        tab = QWidget()
-        layout = QVBoxLayout()
-
-        label = QLabel("Generate system security report")
-
-        report_btn = QPushButton("Generate Report")
-        report_btn.clicked.connect(self.report_message)
-
-        layout.addWidget(label)
-        layout.addWidget(report_btn)
-
-        tab.setLayout(layout)
-
-        return tab
-
-    def report_message(self):
-        msg = QMessageBox()
-        msg.setWindowTitle("Report")
-        msg.setText("Security Report Generated Successfully")
-        msg.exec_()
-
-
-# ---------------- RUN APPLICATION ----------------
-
-app = QApplication(sys.argv)
-
-window = GuardianX()
-window.show()
-
-sys.exit(app.exec_())
+        st.download_button(
+            label="Download Report",
+            data=report,
+            file_name="guardianx_report.txt"
+        )
