@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import datetime
-from flask import Flask
 app = Flask(__name__)
 
 @app.route("/")
@@ -10,7 +9,6 @@ def home():
 
 if __name__ == "__main__":
     app.run()
-app = Flask(__name__)
 CORS(app)  # allow frontend to call backend
 
 # ---------- Dummy Security Data ----------
