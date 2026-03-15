@@ -832,4 +832,41 @@ SYSTEM HEALTH
     startLogs();
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9dc578a094df3984',t:'MTc3MzUxNDMwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>
+  const API_BASE = "https://guardianx-a6fe.onrender.com";
+
+  // Dashboard
+  fetch(`${API_BASE}/api/dashboard`)
+    .then(res => res.json())
+    .then(data => {
+      // Example: show system status in console
+      console.log("Dashboard:", data);
+      document.getElementById("dashboard").textContent = JSON.stringify(data, null, 2);
+    });
+
+  // Logs
+  fetch(`${API_BASE}/api/logs`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Logs:", data);
+      document.getElementById("logs").textContent = JSON.stringify(data, null, 2);
+    });
+
+  // Leak Data
+  fetch(`${API_BASE}/api/leaks`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Leaks:", data);
+      document.getElementById("leaks").textContent = JSON.stringify(data, null, 2);
+    });
+
+  // Report
+  fetch(`${API_BASE}/api/report`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Report:", data);
+      document.getElementById("report").textContent = data.report;
+    });
+</script>
+</body>
 </html>
