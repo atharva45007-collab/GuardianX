@@ -1,15 +1,15 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import datetime
-app = Flask(__name__)
+import os
 
+app = Flask(__name__)
+CORS(app)  # allow frontend to call backend
+
+# ---------- Routes ----------
 @app.route("/")
 def home():
     return "GuardianX is live!"
-
-if __name__ == "__main__":
-    app.run()
-CORS(app)  # allow frontend to call backend
 
 # ---------- Dummy Security Data ----------
 security_data = {
@@ -33,7 +33,6 @@ leak_data = [
 ]
 
 # ---------- API Endpoints ----------
-
 @app.route("/api/dashboard", methods=["GET"])
 def dashboard():
     return jsonify(security_data)
@@ -47,7 +46,6 @@ def get_logs():
 
 @app.route("/api/scan", methods=["POST"])
 def scan_system():
-    # Dummy ransomware detection
     return jsonify({
         "status": "alert",
         "message": "⚠️ Ransomware Activity Detected!",
@@ -70,4 +68,5 @@ System Status: Secure
 
 # ---------- Run Server ----------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
