@@ -414,13 +414,9 @@ def get_threats_from_db():
     return threats
 
 # ---------- Routes ----------
-@app.route("/")
+@app.route('/')
 def home():
-    return jsonify({
-        "status": "online",
-        "service": "GuardianX AI Security Platform",
-        "version": "2.0",
-        "features": ["AI Analysis", "Breach Detection", "Threat Scanning", "Real-time Monitoring"]
+    return render_template('frontend.html')
     })
 
 @app.route("/health")
