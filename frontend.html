@@ -437,7 +437,9 @@
     let threatStats = { total: 0, blocked: 0, leaked: 0, scanning: false };
     let aiModal = null;
 
-    const API_BASE = "https://guardianx-a6fe.onrender.com";
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000'
+        : 'https://guardianx-a6fe.onrender.com';
 
     // ===== Enhanced Data SDK Handler =====
     const dataHandler = {

@@ -416,7 +416,20 @@ def get_threats_from_db():
 # ---------- Routes ----------
 @app.route("/")
 def home():
-    return "GuardianX is live!"
+    return jsonify({
+        "status": "online",
+        "service": "GuardianX AI Security Platform",
+        "version": "2.0",
+        "features": ["AI Analysis", "Breach Detection", "Threat Scanning", "Real-time Monitoring"]
+    })
+
+@app.route("/health")
+def health():
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.datetime.now().isoformat(),
+        "database": "connected" if os.path.exists('guardianx.db') else "not initialized"
+    })
 
 # ---------- API Endpoints ----------
 @app.route("/api/dashboard", methods=["GET"])
@@ -538,4 +551,11 @@ def ai_security_recommendations():
 # ---------- Run Server ----------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    # Use production WSGI server if available, otherwise fallback to development
+    if os.environ.get('FLASK_ENV') == 'production':
+        from waitress import serve
+        print(f"🚀 Starting GuardianX in production mode on port {port}")
+        serve(app, host="0.0.0.0", port=port)
+    else:
+        print(f"🛠️  Starting GuardianX in development mode on port {port}")
+        app.run(host="0.0.0.0", port=port, debug=True)
