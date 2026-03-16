@@ -11,13 +11,55 @@ __pycache__/
 venv/
 env/
 .venv/
-.env/
+ENV/
+env.bak/
+venv.bak/
 
-# Environment variables
+# Environment variables and secrets
 .env
+.env.local
+.env.production
+.env.staging
 *.env
 
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+guardianx.db
+
 # Logs
+*.log
+logs/
+log/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.pytest_cache/
+
+# Security and sensitive files
+secrets.json
+config/secrets.yml
+private_key.pem
+certificate.crt
 *.log
 
 # IDE/Editor configs

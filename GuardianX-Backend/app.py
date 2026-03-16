@@ -14,6 +14,25 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# Security headers
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
+# Security check for required API keys
+REQUIRED_KEYS = ['NVIDIA_API_KEY', 'HIBP_API_KEY']
+missing_keys = [key for key in REQUIRED_KEYS if not os.getenv(key) or os.getenv(key) == 'your_' + key.lower() + '_here']
+
+if missing_keys:
+    print("⚠️  WARNING: Missing or placeholder API keys detected!")
+    print(f"Missing keys: {', '.join(missing_keys)}")
+    print("Please set up your .env file with actual API keys.")
+    print("See .env.example for required configuration.\n")
+
 # Database setup
 def init_db():
     conn = sqlite3.connect('guardianx.db')
@@ -111,9 +130,18 @@ def scan_filesystem(scan_path='.'):
 
 def check_breaches(email):
     # HaveIBeenPwned API integration
-    api_key = os.getenv('HIBP_API_KEY')  # You'll need to get this from HIBP
-    if not api_key:
-        return []
+    api_key = os.getenv('HIBP_API_KEY')
+    if not api_key or api_key == 'your_haveibeenpwned_api_key_here':
+        log_message("HIBP API key not configured - using demo mode", 'WARNING')
+        # Return demo data for development
+        return [
+            {
+                "Name": "Demo Breach",
+                "BreachDate": "2024-01-01",
+                "DataClasses": ["Email addresses", "Passwords"],
+                "Description": "This is demo data. Configure HIBP API key for real breach checking."
+            }
+        ]
 
     try:
         # Get password hashes for breaches
@@ -154,9 +182,9 @@ def get_recent_logs(limit=50):
 
 def generate_ai_report(threats, logs):
     api_key = os.getenv('NVIDIA_API_KEY')
-    if not api_key:
-        log_message("NVIDIA API key not found", 'ERROR')
-        return "AI Report unavailable - API key missing"
+    if not api_key or api_key == 'your_nvidia_api_key_here':
+        log_message("NVIDIA API key not configured", 'WARNING')
+        return "AI Report unavailable - NVIDIA API key not configured. Please set up your .env file."
 
     try:
         url = "https://integrate.api.nvidia.com/v1/chat/completions"
@@ -216,8 +244,8 @@ Keep the report concise but informative, using professional security terminology
 def analyze_threat_with_ai(threat):
     """Use AI to analyze a specific threat and provide detailed assessment"""
     api_key = os.getenv('NVIDIA_API_KEY')
-    if not api_key:
-        return "AI analysis unavailable"
+    if not api_key or api_key == 'your_nvidia_api_key_here':
+        return "AI analysis unavailable - NVIDIA API key not configured"
 
     try:
         url = "https://integrate.api.nvidia.com/v1/chat/completions"
@@ -264,8 +292,8 @@ Be specific and technical in your analysis."""
 def predict_breach_risk(email=None):
     """Use AI to predict breach risk based on patterns"""
     api_key = os.getenv('NVIDIA_API_KEY')
-    if not api_key:
-        return "AI prediction unavailable"
+    if not api_key or api_key == 'your_nvidia_api_key_here':
+        return "AI prediction unavailable - NVIDIA API key not configured"
 
     try:
         url = "https://integrate.api.nvidia.com/v1/chat/completions"
@@ -320,8 +348,8 @@ Focus on actionable intelligence."""
 def get_ai_security_recommendations():
     """Generate AI-powered security recommendations"""
     api_key = os.getenv('NVIDIA_API_KEY')
-    if not api_key:
-        return "AI recommendations unavailable"
+    if not api_key or api_key == 'your_nvidia_api_key_here':
+        return "AI recommendations unavailable - NVIDIA API key not configured"
 
     try:
         url = "https://integrate.api.nvidia.com/v1/chat/completions"
@@ -470,9 +498,17 @@ def report():
 @app.route("/api/check_breaches", methods=["POST"])
 def check_breaches_endpoint():
     data = request.get_json()
-    email = data.get('email')
-    if not email:
-        return jsonify({"error": "Email required"}), 400
+    if not data or 'email' not in data:
+        return jsonify({"error": "Email is required"}), 400
+
+    email = data.get('email', '').strip()
+    if not email or '@' not in email:
+        return jsonify({"error": "Valid email address required"}), 400
+
+    # Basic email validation
+    import re
+    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+        return jsonify({"error": "Invalid email format"}), 400
 
     breaches = check_breaches(email)
     return jsonify({"breaches": breaches, "count": len(breaches)})

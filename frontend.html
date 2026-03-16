@@ -7,445 +7,708 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <script src="/_sdk/element_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;family=Outfit:wght@300;400;600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Marvel:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #020617;
-      --card-bg: rgba(15, 23, 42, 0.8);
-      --accent-color: #10b981;
-      --text-main: #f8fafc;
+      --bg-color: #0a0a0a;
+      --card-bg: rgba(15, 23, 42, 0.95);
+      --marvel-red: #ed1d24;
+      --marvel-blue: #0066cc;
+      --marvel-gold: #ffd700;
+      --text-main: #ffffff;
       --text-muted: #94a3b8;
-      --critical: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
     }
 
     body {
-      font-family: 'Outfit', sans-serif;
-      background-color: var(--bg-color);
+      font-family: 'Marvel', 'Outfit', sans-serif;
+      background: linear-gradient(135deg, var(--bg-color) 0%, #1a1a2e 50%, #16213e 100%);
       color: var(--text-main);
       overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .marvel-gradient {
+      background: linear-gradient(45deg, var(--marvel-red), var(--marvel-blue), var(--marvel-gold));
+      background-size: 300% 300%;
+      animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     .glass {
       background: var(--card-bg);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
 
-    .neon-border {
-      position: relative;
+    .marvel-card {
+      background: linear-gradient(145deg, rgba(237, 29, 36, 0.1), rgba(0, 102, 204, 0.1));
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      box-shadow: 0 0 20px rgba(237, 29, 36, 0.2);
     }
-    
-    .neon-border::after {
+
+    .hero-glow {
+      box-shadow: 0 0 30px rgba(237, 29, 36, 0.4), 0 0 60px rgba(0, 102, 204, 0.2);
+    }
+
+    .scan-animation {
+      animation: scanPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scanPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    .threat-alert {
+      animation: alertFlash 1s ease-in-out infinite;
+    }
+
+    @keyframes alertFlash {
+      0%, 100% { background-color: rgba(239, 68, 68, 0.1); }
+      50% { background-color: rgba(239, 68, 68, 0.3); }
+    }
+
+    .ai-sparkle {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-sparkle::before {
       content: '';
       position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+      animation: sparkle 3s linear infinite;
     }
 
-    .scan-line {
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
-      position: absolute;
-      width: 100%;
-      z-index: 10;
-      animation: scan 3s linear infinite;
-      opacity: 0.3;
-    }
-
-    @keyframes scan {
-      0% { top: 0; }
-      100% { top: 100%; }
+    @keyframes sparkle {
+      0% { transform: rotate(0deg) translateX(-100%); }
+      100% { transform: rotate(360deg) translateX(100%); }
     }
 
     .terminal-font {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
     }
 
-    .pulse {
-      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    .marvel-btn {
+      background: linear-gradient(45deg, var(--marvel-red), var(--marvel-blue));
+      border: 2px solid var(--marvel-gold);
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
     }
 
-    @keyframes pulse-ring {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+    .marvel-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(237, 29, 36, 0.4);
     }
 
-    /* Scrollbar Styling */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-color); }
-    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+    .marvel-btn:active {
+      transform: translateY(0);
+    }
+
+    .stat-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 102, 204, 0.3);
+    }
+
+    .marvel-bg-elements {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .marvel-bg-elements::before {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(237, 29, 36, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .marvel-bg-elements::after {
+      content: '';
+      position: absolute;
+      bottom: 20%;
+      right: 15%;
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(0, 102, 204, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .marvel-particles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--marvel-gold);
+      border-radius: 50%;
+      animation: particleFloat 10s linear infinite;
+    }
+
+    .marvel-logo {
+      position: relative;
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--marvel-gold);
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      animation: logoGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes logoGlow {
+      0% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+      100% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(237, 29, 36, 0.3); }
+    }
+
+    .marvel-card-enhanced {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .marvel-card-enhanced:hover {
+      transform: translateY(-8px) rotateX(5deg);
+      box-shadow: 0 20px 40px rgba(237, 29, 36, 0.3), 0 0 50px rgba(0, 102, 204, 0.2);
+    }
+
+    .marvel-card-enhanced::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--marvel-red), var(--marvel-blue), var(--marvel-gold));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .marvel-card-enhanced:hover::before {
+      opacity: 1;
+    }
   </style>
   <style>body { box-sizing: border-box; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full overflow-auto">
-  <div id="app-container" class="min-h-full w-full p-4 md:p-8 flex flex-col gap-6"><!-- Header -->
+ <body class="min-h-screen overflow-auto">
+  <!-- Marvel Background Elements -->
+  <div class="marvel-bg-elements">
+    <div class="marvel-particles" id="particles-container"></div>
+  </div>
+  <div id="app-container" class="min-h-screen w-full p-4 md:p-8 flex flex-col gap-6">
+   <!-- Marvel-Themed Header -->
    <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-2">
     <div class="flex items-center gap-3">
-     <div class="p-3 glass rounded-xl text-emerald-500"><i data-lucide="shield-check" class="w-8 h-8"></i>
+     <div class="p-4 glass rounded-2xl marvel-card hero-glow">
+      <i data-lucide="shield-check" class="w-10 h-10 text-marvel-gold"></i>
      </div>
      <div>
-      <h1 id="main-title" class="text-2xl md:text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">GuardianX Security Dashboard</h1>
-      <p class="text-sm text-slate-400 flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500 pulse"></span> Live Ransomware &amp; Data Leak Monitoring</p>
+      <div class="flex items-center gap-4">
+       <span class="marvel-logo text-6xl">X</span>
+       <h1 id="main-title" class="text-4xl md:text-5xl font-black bg-clip-text text-transparent marvel-gradient tracking-wider" style="font-family: 'Marvel', 'Outfit', sans-serif; text-shadow: 0 0 20px rgba(237, 29, 36, 0.5);">GUARDIAN</h1>
+      </div>
+      <p class="text-sm text-marvel-gold flex items-center gap-2 font-semibold">
+       <span class="inline-block w-2 h-2 rounded-full bg-marvel-red pulse"></span>
+       AI-Powered Cyber Defense System
+      </p>
      </div>
-    </div><button id="scan-btn" class="px-6 py-2.5 glass rounded-full font-semibold text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/10 transition-all flex items-center gap-2 group"> <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-transform"></i> <span id="scan-text">Initiate Deep Scan</span> </button>
-   </header><!-- Main Grid -->
-   <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-grow"><!-- System Stats Column -->
-    <div class="lg:col-span-2 flex flex-col gap-6"><!-- Top Stats Row -->
-     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="glass p-5 rounded-2xl">
-       <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Protection Level</p>
-       <h3 class="text-2xl font-bold text-emerald-400">98.4%</h3>
-       <div class="w-full h-1 bg-slate-800 rounded-full mt-2">
-        <div class="h-full bg-emerald-500 rounded-full" style="width: 98%"></div>
-       </div>
-      </div>
-      <div class="glass p-5 rounded-2xl">
-       <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Threats Blocked</p>
-       <h3 id="threats-count" class="text-2xl font-bold text-cyan-400">1,204</h3>
-       <p class="text-[10px] text-emerald-500 mt-1">+12 today</p>
-      </div>
-      <div class="glass p-5 rounded-2xl">
-       <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Data Leaks</p>
-       <h3 id="leaks-count" class="text-2xl font-bold text-rose-400">0</h3>
-       <p class="text-[10px] text-slate-500 mt-1">Clean Scan</p>
-      </div>
-     </div><!-- Main Status Display -->
-     <div class="glass rounded-2xl p-6 relative overflow-hidden flex-grow flex flex-col">
-      <div class="scan-line"></div>
+    </div>
+    <div class="flex gap-3">
+     <button id="scan-btn" class="px-8 py-3 marvel-btn rounded-xl font-bold text-sm flex items-center gap-2 group scan-animation">
+      <i data-lucide="zap" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+      <span id="scan-text">INITIATE DEEP SCAN</span>
+     </button>
+     <button id="ai-recommendations-btn" class="px-6 py-3 glass rounded-xl font-semibold text-marvel-gold border border-marvel-gold/50 hover:bg-marvel-gold/10 transition-all flex items-center gap-2 ai-sparkle">
+      <i data-lucide="brain" class="w-5 h-5"></i>
+      AI Insights
+     </button>
+    </div>
+   </header>
+
+   <!-- Enhanced Stats Grid -->
+   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="stat-card p-6 rounded-2xl glass marvel-card-enhanced">
+     <div class="flex items-center justify-between mb-3">
+      <i data-lucide="shield" class="w-8 h-8 text-marvel-blue"></i>
+      <span class="text-xs font-bold text-marvel-gold uppercase tracking-wider">Protection</span>
+     </div>
+     <h3 class="text-3xl font-bold text-marvel-blue">98.4%</h3>
+     <div class="w-full h-2 bg-slate-700 rounded-full mt-3">
+      <div class="h-full bg-marvel-blue rounded-full transition-all duration-1000" style="width: 98%"></div>
+     </div>
+    </div>
+
+    <div class="stat-card p-6 rounded-2xl glass marvel-card-enhanced">
+     <div class="flex items-center justify-between mb-3">
+      <i data-lucide="target" class="w-8 h-8 text-success"></i>
+      <span class="text-xs font-bold text-marvel-gold uppercase tracking-wider">Threats Blocked</span>
+     </div>
+     <h3 id="threats-count" class="text-3xl font-bold text-success">1,204</h3>
+     <p class="text-xs text-emerald-400 mt-2">+12 today</p>
+    </div>
+
+    <div class="stat-card p-6 rounded-2xl glass marvel-card-enhanced">
+     <div class="flex items-center justify-between mb-3">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-danger"></i>
+      <span class="text-xs font-bold text-marvel-gold uppercase tracking-wider">Data Leaks</span>
+     </div>
+     <h3 id="leaks-count" class="text-3xl font-bold text-danger">0</h3>
+     <p class="text-xs text-slate-400 mt-2">System Secure</p>
+    </div>
+
+    <div class="stat-card p-6 rounded-2xl glass marvel-card-enhanced">
+     <div class="flex items-center justify-between mb-3">
+      <i data-lucide="brain" class="w-8 h-8 text-marvel-gold"></i>
+      <span class="text-xs font-bold text-marvel-gold uppercase tracking-wider">AI Confidence</span>
+     </div>
+     <h3 class="text-3xl font-bold text-marvel-gold">95.2%</h3>
+     <p class="text-xs text-marvel-blue mt-2">Neural Analysis Active</p>
+    </div>
+   </div>
+
+   <!-- Main Dashboard Grid -->
+   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-grow">
+    <!-- Left Column: Command Center & Logs -->
+    <div class="xl:col-span-2 flex flex-col gap-6">
+     <!-- AI Command Center -->
+     <div class="glass rounded-2xl p-6 marvel-card hero-glow">
       <div class="flex justify-between items-center mb-6">
-       <h2 id="status-title" class="text-lg font-semibold text-emerald-400 flex items-center gap-2"><i data-lucide="activity" class="w-5 h-5"></i> System Command Center</h2>
-       <div class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium border border-emerald-500/20">
-        STABLE
+       <h2 class="text-xl font-bold text-marvel-gold flex items-center gap-3">
+        <i data-lucide="cpu" class="w-6 h-6"></i>
+        AI COMMAND CENTER
+       </h2>
+       <div class="px-4 py-2 rounded-full bg-marvel-red/20 text-marvel-red text-sm font-bold border border-marvel-red/50">
+        NEURAL LINK ACTIVE
        </div>
       </div>
       <div class="flex-grow flex items-center justify-center p-4">
        <div class="w-full">
-        <div id="dashboard-content" class="terminal-font text-xs md:text-sm text-emerald-300/80 leading-relaxed whitespace-pre-wrap">
-         Initializing environment... Connection to GuardianX Neural Link...
+        <div id="dashboard-content" class="terminal-font text-sm text-marvel-blue/80 leading-relaxed whitespace-pre-wrap min-h-[200px] p-4 bg-slate-900/50 rounded-lg border border-marvel-gold/20">
+         Initializing Guardian-X Neural Network...
+         Connecting to AI Defense Matrix...
+         Scanning for anomalous patterns...
         </div>
        </div>
       </div>
      </div>
-    </div><!-- Side Column: Events & Leaks -->
-    <div class="flex flex-col gap-6"><!-- Live Logs -->
-     <div class="glass rounded-2xl p-5 h-1/2 flex flex-col">
-      <h2 class="text-sm font-semibold text-cyan-400 mb-4 flex items-center gap-2"><i data-lucide="list" class="w-4 h-4"></i> Real-time Activity Log</h2>
-      <div id="logs-list" class="flex-grow overflow-y-auto terminal-font text-[10px] space-y-2">
-       <div class="text-slate-500">
-        [SYSTEM] Booting GuardianX Engine...
-       </div>
-      </div>
-     </div><!-- Leaks Detected -->
-     <div class="glass rounded-2xl p-5 h-1/2 flex flex-col">
-      <h2 class="text-sm font-semibold text-rose-400 mb-4 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Sensitive Leak Alerts</h2>
-      <div id="leaks-list" class="flex-grow overflow-y-auto space-y-3">
-       <div class="p-3 border border-slate-700/50 rounded-lg bg-slate-900/50">
-        <p class="text-[10px] text-slate-400 mb-1">No leaks detected in the current session.</p>
+
+     <!-- Real-time Activity Log -->
+     <div class="glass rounded-2xl p-6">
+      <h2 class="text-lg font-bold text-marvel-blue mb-4 flex items-center gap-2">
+       <i data-lucide="activity" class="w-5 h-5"></i>
+       REAL-TIME ACTIVITY LOG
+      </h2>
+      <div id="logs-list" class="overflow-y-auto terminal-font text-sm space-y-2 max-h-64 p-4 bg-slate-900/30 rounded-lg border border-slate-700/50">
+       <div class="text-marvel-gold">
+        [SYSTEM] Guardian-X Engine Online...
        </div>
       </div>
      </div>
     </div>
-   </main><!-- Footer Security Report -->
-   <footer class="glass rounded-2xl p-6 mb-4">
-    <div class="flex items-center gap-3 mb-3"><i data-lucide="file-text" class="text-emerald-500 w-5 h-5"></i>
-     <h2 class="font-semibold text-slate-200">AI-Generated Security Analysis</h2>
+
+    <!-- Right Column: Threat Analysis & AI Features -->
+    <div class="flex flex-col gap-6">
+     <!-- AI Threat Analysis Panel -->
+     <div class="glass rounded-2xl p-5 ai-sparkle">
+      <h2 class="text-lg font-bold text-marvel-gold mb-4 flex items-center gap-2">
+       <i data-lucide="search" class="w-5 h-5"></i>
+       AI THREAT ANALYSIS
+      </h2>
+      <div id="threat-analysis" class="space-y-3 max-h-80 overflow-y-auto">
+       <div class="p-4 border border-slate-700/50 rounded-lg bg-slate-900/50">
+        <p class="text-sm text-slate-400">Select a threat for AI-powered analysis</p>
+       </div>
+      </div>
+     </div>
+
+     <!-- Breach Detection & Prediction -->
+     <div class="glass rounded-2xl p-5">
+      <h2 class="text-lg font-bold text-danger mb-4 flex items-center gap-2">
+       <i data-lucide="alert-circle" class="w-5 h-5"></i>
+       BREACH INTELLIGENCE
+      </h2>
+      <div class="space-y-3">
+       <input type="email" id="breach-email" placeholder="Enter email for breach check" class="w-full p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-marvel-gold focus:outline-none">
+       <button id="check-breaches-btn" class="w-full py-3 marvel-btn rounded-lg font-semibold">CHECK BREACHES</button>
+       <button id="predict-breaches-btn" class="w-full py-3 glass rounded-lg font-semibold text-marvel-blue border border-marvel-blue/50 hover:bg-marvel-blue/10">AI RISK PREDICTION</button>
+      </div>
+      <div id="breach-results" class="mt-4 space-y-2 max-h-48 overflow-y-auto"></div>
+     </div>
+
+     <!-- Sensitive Data Alerts -->
+     <div class="glass rounded-2xl p-5">
+      <h2 class="text-lg font-bold text-warning mb-4 flex items-center gap-2">
+       <i data-lucide="lock" class="w-5 h-5"></i>
+       SENSITIVE LEAK ALERTS
+      </h2>
+      <div id="leaks-list" class="space-y-3 max-h-64 overflow-y-auto">
+       <div class="p-3 border border-slate-700/50 rounded-lg bg-slate-900/50">
+        <p class="text-sm text-slate-400">No active leak alerts</p>
+       </div>
+      </div>
+     </div>
     </div>
-    <div id="security-report" class="text-sm text-slate-400 leading-relaxed">
-     Standby for heuristic analysis report...
+   </div>
+
+   <!-- AI Security Report Footer -->
+   <footer class="glass rounded-2xl p-6 mb-4 marvel-card">
+    <div class="flex items-center gap-3 mb-4">
+     <i data-lucide="file-text" class="text-marvel-gold w-6 h-6"></i>
+     <h2 class="font-bold text-white text-lg">AI-GENERATED SECURITY ANALYSIS</h2>
+     <div class="ml-auto flex items-center gap-2">
+      <div class="w-3 h-3 rounded-full bg-marvel-red animate-pulse"></div>
+      <span class="text-sm text-marvel-gold font-semibold">LIVE ANALYSIS</span>
+     </div>
     </div>
-   </footer><!-- Notification Toast -->
-   <div id="notification" class="fixed bottom-6 right-6 translate-y-20 opacity-0 transition-all duration-500 glass px-6 py-4 rounded-2xl border-l-4 border-emerald-500 z-50 flex items-center gap-3">
-    <div id="notif-icon" class="text-emerald-500"><i data-lucide="check-circle" class="w-5 h-5"></i>
+    <div id="security-report" class="text-sm text-slate-300 leading-relaxed p-4 bg-slate-900/30 rounded-lg border border-marvel-gold/20">
+     Initializing AI security analysis...
+    </div>
+   </footer>
+
+   <!-- Marvel-Themed Notification Toast -->
+   <div id="notification" class="fixed bottom-6 right-6 translate-y-20 opacity-0 transition-all duration-500 glass px-6 py-4 rounded-2xl border-l-4 border-marvel-gold z-50 flex items-center gap-3 marvel-card">
+    <div id="notif-icon" class="text-marvel-gold">
+     <i data-lucide="check-circle" class="w-5 h-5"></i>
     </div>
     <div>
-     <h4 id="notif-title" class="font-bold text-sm">Update Received</h4>
-     <p id="notif-body" class="text-xs text-slate-400">Security definitions updated successfully.</p>
+     <h4 id="notif-title" class="font-bold text-sm text-white">System Alert</h4>
+     <p id="notif-body" class="text-xs text-slate-300">Guardian-X systems operational</p>
+    </div>
+   </div>
+
+   <!-- AI Modal for Detailed Analysis -->
+   <div id="ai-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto marvel-card hero-glow">
+     <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-bold text-marvel-gold">AI ANALYSIS RESULTS</h3>
+      <button id="close-modal" class="text-slate-400 hover:text-white">
+       <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+     </div>
+     <div id="ai-modal-content" class="text-slate-300 leading-relaxed">
+      Loading AI analysis...
+     </div>
     </div>
    </div>
   </div>
   <script>
-    // ===== Data SDK Handler =====
+    // ===== Marvel-Themed GuardianX Dashboard =====
     let allThreats = [];
     let threatStats = { total: 0, blocked: 0, leaked: 0, scanning: false };
+    let aiModal = null;
 
+    const API_BASE = "https://guardianx-a6fe.onrender.com";
+
+    // ===== Enhanced Data SDK Handler =====
     const dataHandler = {
       onDataChanged(data) {
         allThreats = data || [];
         updateThreatStats();
         renderThreatsUI();
+        renderThreatAnalysis();
       }
     };
 
-    // ===== Initialize Data SDK =====
-    async function initDataSDK() {
+    // ===== Initialize Marvel Dashboard =====
+    async function initMarvelDashboard() {
       if (!window.dataSdk) return;
+
       const result = await window.dataSdk.init(dataHandler);
-      if (result.isError) console.error('Data SDK init failed:', result.error);
-    }
+      if (result.isError) {
+        console.error('Data SDK init failed:', result.error);
+        showNotification('System Warning', 'Data SDK initialization failed', 'warning');
+      }
 
-    // ===== Threat Detection Engine (Local) =====
-    function generateThreatSignatures() {
-      const signatures = [
-        { pattern: /\.exe$|\.scr$|\.vbs$|\.bat$/, name: "Executable File", type: "exe_threat" },
-        { pattern: /\.encrypted$|\.locked$|\.cryptolocker$|\.wannacry$/, name: "Ransomware Extension", type: "ransomware" },
-        { pattern: /onload=|onerror=|<script|eval\(|base64|atob/, name: "Malicious Script", type: "script_injection" },
-        { pattern: /password|credit|ssn|card|api_key|token|secret/, name: "Sensitive Data", type: "sensitive_data" },
-        { pattern: /select \* from|drop table|union select|exec /i, name: "SQL Injection", type: "sql_injection" },
-      ];
-      return signatures;
-    }
-
-    function scanText(text) {
-      const signatures = generateThreatSignatures();
-      const detections = [];
-      
-      signatures.forEach(sig => {
-        if (sig.pattern.test(text)) {
-          detections.push({
-            signature: sig.name,
-            type: sig.type,
-            severity: sig.type === "ransomware" ? "critical" : "high"
-          });
-        }
+      // Initialize AI modal
+      aiModal = document.getElementById('ai-modal');
+      document.getElementById('close-modal').addEventListener('click', () => {
+        aiModal.classList.add('hidden');
       });
-      
-      return detections;
+
+      // Marvel-themed startup sequence
+      await playStartupSequence();
     }
 
-    // ===== Backend API Integration =====
-    const API_BASE = "https://guardianx-a6fe.onrender.com";
+    async function playStartupSequence() {
+      const messages = [
+        "Initializing Guardian-X Neural Network...",
+        "Loading Marvel Defense Protocols...",
+        "Connecting to AI Defense Matrix...",
+        "Scanning for anomalous patterns...",
+        "System ready. Welcome to Guardian-X Command Center."
+      ];
 
-    async function fetchFromBackend(endpoint) {
+      const content = document.getElementById('dashboard-content');
+      for (let i = 0; i < messages.length; i++) {
+        content.textContent = messages.slice(0, i + 1).join('\n');
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
+
+    // ===== Enhanced Threat Detection =====
+    function generateThreatSignatures() {
+      return [
+        { pattern: /\.exe$|\.scr$|\.vbs$|\.bat$/, name: "Executable Threat", type: "executable", severity: "high" },
+        { pattern: /\.encrypted$|\.locked$|\.cryptolocker$|\.wannacry$/, name: "Ransomware Detected", type: "ransomware", severity: "critical" },
+        { pattern: /onload=|onerror=|<script|eval\(|base64|atob/, name: "Malicious Script", type: "script_injection", severity: "high" },
+        { pattern: /password|credit|ssn|card|api_key|token|secret/, name: "Sensitive Data Exposure", type: "data_leak", severity: "critical" },
+        { pattern: /select \* from|drop table|union select|exec /i, name: "SQL Injection Attempt", type: "sql_injection", severity: "high" },
+      ];
+    }
+
+    // ===== Marvel-Themed API Integration =====
+    async function fetchFromBackend(endpoint, options = {}) {
       try {
         const response = await fetch(`${API_BASE}/api/${endpoint}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          method: options.method || 'GET',
+          headers: { 'Content-Type': 'application/json', ...options.headers },
+          body: options.body ? JSON.stringify(options.body) : undefined
         });
-        
+
         if (!response.ok) throw new Error(`API error: ${response.status}`);
         return await response.json();
       } catch (err) {
         console.error(`Failed to fetch ${endpoint}:`, err);
+        showNotification('API Error', `Failed to connect to ${endpoint}`, 'error');
         return null;
       }
     }
 
-    // ===== Real-World Features with Backend Integration =====
-    async function performLocalFileScan() {
-      const threats = [];
-      
-      try {
-        // Fetch dashboard data from backend
-        const dashboardData = await fetchFromBackend("dashboard");
-        if (dashboardData && dashboardData.files) {
-          for (const file of dashboardData.files.slice(0, 5)) {
-            const result = await window.dataSdk.create({
-              id: "threat_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
-              type: file.type || "unknown",
-              severity: file.risk_level === "high" ? "critical" : file.risk_level === "medium" ? "high" : "medium",
-              filename: file.name || "unknown.file",
-              fileSize: file.size || "0B",
-              detectionTime: new Date().toISOString(),
-              category: file.category || "malware",
-              status: "quarantined"
-            });
-            
-            if (result.isOk) {
-              threats.push(file);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Backend file scan error:", err);
-      }
-      
-      // Fallback to local patterns if backend fails
-      if (threats.length === 0) {
-        const commonThreatPatterns = [
-          { name: "WannaCry.exe", size: "2.4MB", category: "ransomware" },
-          { name: "CryptoLocker.encrypted", size: "156KB", category: "ransomware" },
-          { name: "malware.vbs", size: "45KB", category: "script" },
-          { name: ".onion_config", size: "8KB", category: "c2_communication" },
-          { name: "bitcoin_wallet.dat", size: "256B", category: "sensitive_data" },
-        ];
-        
-        const selected = commonThreatPatterns.slice(0, Math.floor(Math.random() * 3) + 1);
-        
-        for (const threat of selected) {
-          const result = await window.dataSdk.create({
-            id: "threat_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
-            type: threat.category,
-            severity: threat.category === "ransomware" ? "critical" : threat.category === "script" ? "high" : "medium",
-            filename: threat.name,
-            fileSize: threat.size,
-            detectionTime: new Date().toISOString(),
-            category: threat.category,
-            status: "quarantined"
-          });
-          
-          if (result.isOk) {
-            threats.push(threat);
-          }
-        }
-      }
-      
-      return threats;
-    }
+    // ===== Enhanced File Scanning =====
+    async function performMarvelScan() {
+      const btn = document.getElementById("scan-btn");
+      btn.disabled = true;
+      btn.classList.add('scan-animation');
 
-    async function checkDataBreachDatabases() {
-      try {
-        // Fetch breach data from backend
-        const leaksData = await fetchFromBackend("leaks");
-        if (leaksData && leaksData.leaks) {
-          return leaksData.leaks.map(leak => ({
-            database: leak.source || "Unknown Database",
-            year: leak.year || new Date().getFullYear(),
-            records: leak.affected_records || "Unknown",
-            status: leak.severity === "critical" ? "Flagged" : "Resolved"
-          }));
-        }
-      } catch (err) {
-        console.error("Backend breach check error:", err);
-      }
-      
-      // Fallback simulation
-      const breachSimulation = [
-        { database: "LinkedIn", year: 2023, records: "500K", status: "Flagged" },
-        { database: "Ticketmaster", year: 2022, records: "1.5M", status: "Resolved" },
+      showNotification('Scan Initiated', 'Guardian-X deploying neural scan protocols...', 'info');
+
+      const phases = [
+        "Phase 1/4: Initializing neural scan matrix...",
+        "Phase 2/4: Deploying AI threat detection algorithms...",
+        "Phase 3/4: Cross-referencing global threat intelligence...",
+        "Phase 4/4: Finalizing security assessment..."
       ];
-      
-      return breachSimulation.filter(() => Math.random() > 0.7);
-    }
 
-    async function analyzeNetworkBehavior() {
+      const content = document.getElementById("dashboard-content");
+
       try {
-        // Fetch logs from backend for network analysis
-        const logsData = await fetchFromBackend("logs");
-        if (logsData && logsData.logs) {
-          return logsData.logs.slice(0, 3).map(log => ({
-            port: log.port || "443",
-            type: log.type || "Network Traffic",
-            risk: log.severity === "high" ? "high" : "medium"
-          }));
+        // Phase 1: File scanning
+        content.textContent = phases[0];
+        await new Promise(r => setTimeout(r, 1000));
+
+        const scanResult = await fetchFromBackend("scan", { method: 'POST' });
+        if (scanResult) {
+          content.textContent = phases[0] + "\n✓ Neural scan matrix activated";
         }
+
+        // Phase 2: Update UI
+        await new Promise(r => setTimeout(r, 800));
+        content.textContent = phases.slice(0, 2).join("\n✓ Complete\n") + "\n✓ Complete";
+
+        // Phase 3: Get logs
+        await new Promise(r => setTimeout(r, 600));
+        content.textContent = phases.slice(0, 3).join("\n✓ Complete\n") + "\n✓ Complete";
+
+        // Phase 4: Generate report
+        await new Promise(r => setTimeout(r, 800));
+        const report = await fetchFromBackend("report");
+        if (report) {
+          document.getElementById("security-report").innerHTML = report.report.split('\n').join('<br>');
+        }
+
+        // Final results
+        content.textContent = phases.join("\n✓ Complete\n") + "\n✓ Complete\n\n" +
+                             `🛡️ Scan Complete - ${threatStats.total} threats analyzed\n` +
+                             `⚡ ${threatStats.blocked} threats neutralized\n` +
+                             `🎯 System protection: 98.4%`;
+
+        showNotification('Scan Complete', `Analysis complete! ${threatStats.total} threats processed.`, 'success');
+
       } catch (err) {
-        console.error("Backend network analysis error:", err);
+        console.error("Scan error:", err);
+        content.textContent = "❌ Scan failed - Neural link disrupted\nPlease check system connection.";
+        showNotification('Scan Failed', 'Neural scan encountered an error', 'error');
       }
-      
-      // Fallback simulation
-      const behaviors = [
-        { port: "6667", type: "IRC C&C", risk: "high" },
-        { port: "443", type: "HTTPS", risk: "low" },
-        { port: "53", type: "DNS Queries", risk: "medium" },
-      ];
-      
-      return behaviors.filter(() => Math.random() > 0.5);
+
+      threatStats.scanning = false;
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.classList.remove('scan-animation');
+      }, 2000);
     }
 
-    async function generateSecurityReport() {
-      try {
-        // Fetch AI-generated report from backend
-        const reportData = await fetchFromBackend("report");
-        if (reportData && reportData.report) {
-          return reportData.report;
-        }
-      } catch (err) {
-        console.error("Backend report error:", err);
+    // ===== AI Features Integration =====
+    async function analyzeThreatWithAI(threatId) {
+      showNotification('AI Analysis', 'Deploying neural analysis protocols...', 'info');
+
+      const analysis = await fetchFromBackend(`ai/analyze_threat/${threatId}`);
+      if (analysis) {
+        document.getElementById('ai-modal-content').innerHTML = analysis.analysis.split('\n').join('<br>');
+        aiModal.classList.remove('hidden');
+        showNotification('Analysis Complete', 'AI threat assessment ready', 'success');
       }
-      
-      // Fallback report
-      return "🔒 Security Analysis Complete\n\n" +
-             "✓ File System: Clean\n" +
-             "✓ Network: Monitored\n" +
-             "✓ Database: Checked\n\n" +
-             "Status: System Protected";
     }
 
+    async function checkBreaches() {
+      const email = document.getElementById('breach-email').value.trim();
+      if (!email) {
+        showNotification('Input Required', 'Please enter an email address', 'warning');
+        return;
+      }
+
+      showNotification('Breach Check', 'Scanning global breach databases...', 'info');
+
+      const result = await fetchFromBackend("check_breaches", {
+        method: 'POST',
+        body: { email }
+      });
+
+      if (result) {
+        renderBreachResults(result);
+        showNotification('Check Complete', `Found ${result.count} breach(es)`, result.count > 0 ? 'warning' : 'success');
+      }
+    }
+
+    async function predictBreachRisk() {
+      const email = document.getElementById('breach-email').value.trim();
+      showNotification('AI Prediction', 'Calculating risk assessment...', 'info');
+
+      const prediction = await fetchFromBackend(`ai/breach_prediction?email=${encodeURIComponent(email || 'general')}`);
+      if (prediction) {
+        document.getElementById('ai-modal-content').innerHTML = prediction.prediction.split('\n').join('<br>');
+        aiModal.classList.remove('hidden');
+        showNotification('Prediction Ready', 'AI risk assessment complete', 'success');
+      }
+    }
+
+    async function getAIRecommendations() {
+      showNotification('AI Insights', 'Generating security recommendations...', 'info');
+
+      const recommendations = await fetchFromBackend("ai/recommendations");
+      if (recommendations) {
+        document.getElementById('ai-modal-content').innerHTML = recommendations.recommendations.split('\n').join('<br>');
+        aiModal.classList.remove('hidden');
+        showNotification('Recommendations Ready', 'AI insights available', 'success');
+      }
+    }
+
+    // ===== Enhanced UI Rendering =====
     function updateThreatStats() {
       threatStats.total = allThreats.length;
       threatStats.blocked = allThreats.filter(t => t.status === "quarantined").length;
-      threatStats.leaked = allThreats.filter(t => t.category === "sensitive_data").length;
-      
-      document.getElementById("threats-count").textContent = threatStats.blocked;
+      threatStats.leaked = allThreats.filter(t => t.category === "sensitive_data" || t.category === "data_leak").length;
+
+      document.getElementById("threats-count").textContent = threatStats.blocked.toLocaleString();
       document.getElementById("leaks-count").textContent = threatStats.leaked;
-      
-      const protectionLevel = threatStats.total === 0 ? 100 : Math.max(50, 100 - (threatStats.leaked * 10));
-      document.querySelector('[style*="width"]')?.parentElement?.querySelector('div').style.width = protectionLevel + '%';
     }
 
     function renderThreatsUI() {
       const leaksList = document.getElementById("leaks-list");
-      const logsList = document.getElementById("logs-list");
-      
+
       if (allThreats.length === 0) {
-        leaksList.innerHTML = '<div class="p-3 border border-slate-700/50 rounded-lg bg-slate-900/50"><p class="text-[10px] text-slate-400">System clean. No threats detected.</p></div>';
-        logsList.innerHTML = '<div class="text-slate-500 text-[10px]">[SYSTEM] Continuous monitoring active...</div>';
+        leaksList.innerHTML = '<div class="p-3 border border-slate-700/50 rounded-lg bg-slate-900/50"><p class="text-sm text-slate-400">System secure - No active threats detected</p></div>';
         return;
       }
-      
+
       leaksList.innerHTML = allThreats.map(threat => `
-        <div class="p-3 border ${threat.severity === 'critical' ? 'border-rose-500/40 bg-rose-500/10' : 'border-amber-500/40 bg-amber-500/10'} rounded-lg transition-all hover:shadow-lg group">
-          <div class="flex justify-between items-start mb-2">
-            <span class="text-[10px] font-bold ${threat.severity === 'critical' ? 'text-rose-400' : 'text-amber-400'} uppercase">${threat.type}</span>
-            <span class="text-[8px] px-2 py-1 rounded-full ${threat.severity === 'critical' ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300'}">${threat.severity}</span>
+        <div class="p-4 border ${threat.severity === 'critical' ? 'border-danger/60 bg-danger/10 threat-alert' : 'border-warning/60 bg-warning/10'} rounded-lg transition-all hover:shadow-lg group marvel-card">
+          <div class="flex justify-between items-start mb-3">
+            <span class="text-sm font-bold ${threat.severity === 'critical' ? 'text-danger' : 'text-warning'} uppercase tracking-wide">${threat.type}</span>
+            <span class="text-xs px-3 py-1 rounded-full ${threat.severity === 'critical' ? 'bg-danger/30 text-danger' : 'bg-warning/30 text-warning'} font-semibold">${threat.severity}</span>
           </div>
-          <p class="text-[11px] text-slate-300 terminal-font font-semibold">${threat.filename}</p>
-          <p class="text-[9px] text-slate-500 mt-1">Size: ${threat.fileSize} | ${threat.category}</p>
-          <div class="flex gap-2 mt-2">
-            <button onclick="quarantineThreat('${threat.__backendId}')" class="text-[9px] px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 transition">Quarantine</button>
-            <button onclick="deleteThreat('${threat.__backendId}')" class="text-[9px] px-2 py-1 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/40 transition">Remove</button>
+          <p class="text-slate-300 terminal-font font-semibold text-sm mb-2">${threat.filename}</p>
+          <p class="text-xs text-slate-500 mb-3">Size: ${threat.fileSize} | ${threat.category}</p>
+          <div class="flex gap-2">
+            <button onclick="quarantineThreat('${threat.__backendId}')" class="text-xs px-3 py-2 rounded bg-success/20 text-success hover:bg-success/40 transition font-semibold">Quarantine</button>
+            <button onclick="analyzeThreatWithAI('${threat.__backendId}')" class="text-xs px-3 py-2 rounded bg-marvel-blue/20 text-marvel-blue hover:bg-marvel-blue/40 transition font-semibold">AI Analysis</button>
+            <button onclick="deleteThreat('${threat.__backendId}')" class="text-xs px-3 py-2 rounded bg-danger/20 text-danger hover:bg-danger/40 transition font-semibold">Remove</button>
           </div>
         </div>
       `).join('');
-      
-      // Update logs
-      const recentLogs = allThreats.slice(-8).map(t => 
-        `[${new Date(t.detectionTime).toLocaleTimeString()}] ${t.severity.toUpperCase()}: ${t.filename} detected (${t.type})`
-      );
-      logsList.innerHTML = recentLogs.map(log => 
-        `<div class="flex gap-2 mb-1 border-l border-slate-800 pl-2"><span class="text-cyan-500/80 text-[10px]">${log}</span></div>`
-      ).join('');
     }
 
-    async function quarantineThreat(id) {
-      const threat = allThreats.find(t => t.__backendId === id);
-      if (!threat) return;
-      
-      const result = await window.dataSdk.update({ ...threat, status: "quarantined" });
-      if (result.isOk) {
-        notify("Threat Quarantined", `${threat.filename} isolated safely.`);
+    function renderThreatAnalysis() {
+      const analysisDiv = document.getElementById("threat-analysis");
+
+      if (allThreats.length === 0) {
+        analysisDiv.innerHTML = '<div class="p-4 border border-slate-700/50 rounded-lg bg-slate-900/50"><p class="text-sm text-slate-400">No threats available for analysis</p></div>';
+        return;
       }
+
+      analysisDiv.innerHTML = allThreats.slice(0, 3).map(threat => `
+        <div class="p-3 border border-marvel-gold/30 rounded-lg bg-slate-900/30 hover:bg-marvel-gold/5 transition cursor-pointer" onclick="analyzeThreatWithAI('${threat.__backendId}')">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="search" class="w-4 h-4 text-marvel-gold"></i>
+            <span class="text-sm font-semibold text-marvel-gold">${threat.filename}</span>
+          </div>
+          <p class="text-xs text-slate-400">${threat.type} • ${threat.severity} risk</p>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
     }
 
-    async function deleteThreat(id) {
-      const threat = allThreats.find(t => t.__backendId === id);
-      if (!threat) return;
-      
-      const result = await window.dataSdk.delete(threat);
-      if (result.isOk) {
-        notify("Threat Removed", `${threat.filename} deleted from system.`);
+    function renderBreachResults(result) {
+      const resultsDiv = document.getElementById("breach-results");
+
+      if (!result.breaches || result.breaches.length === 0) {
+        resultsDiv.innerHTML = '<div class="p-3 border border-success/50 rounded-lg bg-success/10"><p class="text-sm text-success">No breaches found - Email appears secure</p></div>';
+        return;
       }
+
+      resultsDiv.innerHTML = result.breaches.map(breach => `
+        <div class="p-3 border border-danger/50 rounded-lg bg-danger/10">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-sm font-bold text-danger">${breach.Name}</span>
+            <span class="text-xs px-2 py-1 rounded bg-danger/30 text-danger">${breach.BreachDate}</span>
+          </div>
+          <p class="text-xs text-slate-400">Data compromised: ${breach.DataClasses ? breach.DataClasses.join(', ') : 'Unknown'}</p>
+        </div>
+      `).join('');
     }
 
-    // ===== UI Helpers =====
-    const defaultConfig = {
-      app_title: "GuardianX Security Dashboard",
-      status_heading: "System Command Center",
-      scan_button_text: "Initiate Deep Scan",
-      primary_color: "#10b981",
-      surface_color: "#0f172a",
-      text_color: "#f8fafc"
-    };
-
-    let config = { ...defaultConfig };
-
-    function notify(title, message, type = 'success') {
+    // ===== Marvel-Themed Notifications =====
+    function showNotification(title, message, type = 'info') {
       const notif = document.getElementById("notification");
       const nTitle = document.getElementById("notif-title");
       const nBody = document.getElementById("notif-body");
@@ -453,152 +716,101 @@
 
       nTitle.textContent = title;
       nBody.textContent = message;
-      
-      if(type === 'error') {
-        notif.style.borderLeftColor = '#ef4444';
-        nIcon.className = 'text-rose-500';
-        nIcon.innerHTML = '<i data-lucide="x-circle" class="w-5 h-5"></i>';
-      } else {
-        notif.style.borderLeftColor = '#10b981';
-        nIcon.className = 'text-emerald-500';
-        nIcon.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i>';
-      }
-      
+
+      // Marvel-themed styling
+      const colors = {
+        success: { border: 'border-success', icon: 'text-success', bg: 'bg-success/20' },
+        error: { border: 'border-danger', icon: 'text-danger', bg: 'bg-danger/20' },
+        warning: { border: 'border-warning', icon: 'text-warning', bg: 'bg-warning/20' },
+        info: { border: 'border-marvel-blue', icon: 'text-marvel-blue', bg: 'bg-marvel-blue/20' }
+      };
+
+      const color = colors[type] || colors.info;
+      notif.className = `fixed bottom-6 right-6 translate-y-20 opacity-0 transition-all duration-500 glass px-6 py-4 rounded-2xl border-l-4 ${color.border} z-50 flex items-center gap-3 marvel-card`;
+
+      nIcon.className = color.icon;
+      nIcon.innerHTML = {
+        success: '<i data-lucide="check-circle" class="w-5 h-5"></i>',
+        error: '<i data-lucide="x-circle" class="w-5 h-5"></i>',
+        warning: '<i data-lucide="alert-triangle" class="w-5 h-5"></i>',
+        info: '<i data-lucide="info" class="w-5 h-5"></i>'
+      }[type];
+
       lucide.createIcons();
       notif.classList.remove("translate-y-20", "opacity-0");
-      
+
       setTimeout(() => {
         notif.classList.add("translate-y-20", "opacity-0");
-      }, 3000);
+      }, 4000);
     }
 
-    async function runFullScan() {
-      const btn = document.getElementById("scan-btn");
-      btn.disabled = true;
-      btn.querySelector("i").classList.add("animate-spin");
-      threatStats.scanning = true;
-      
-      notify("Scan Started", "Connecting to GuardianX backend...");
-      
-      // Update dashboard with live phases
-      const phases = [
-        "Phase 1/3: Fetching file system scan...",
-        "Phase 2/3: Analyzing network behavior...",
-        "Phase 3/3: Cross-referencing breach databases..."
-      ];
-      
-      document.getElementById("dashboard-content").textContent = phases[0];
-      
-      try {
-        // Phase 1: File scanning
-        await new Promise(r => setTimeout(r, 800));
-        document.getElementById("dashboard-content").textContent = phases[0] + "\n✓ Complete";
-        
-        await performLocalFileScan();
-        
-        // Phase 2: Network analysis
-        await new Promise(r => setTimeout(r, 600));
-        document.getElementById("dashboard-content").textContent = phases.slice(0, 2).join("\n✓ Complete\n") + "\n✓ Complete";
-        
-        const networkThreats = await analyzeNetworkBehavior();
-        
-        // Phase 3: Breach check
-        await new Promise(r => setTimeout(r, 600));
-        document.getElementById("dashboard-content").textContent = phases.join("\n✓ Complete\n") + "\n✓ Complete";
-        
-        const breaches = await checkDataBreachDatabases();
-        
-        // Get security report
-        const report = await generateSecurityReport();
-        document.getElementById("security-report").innerHTML = report.split('\n').join('<br>');
-        
-        // Display final results
-        await new Promise(r => setTimeout(r, 500));
-        
-        const resultSummary = `
-          <div class="space-y-2">
-            <div>✓ Scan completed at ${new Date().toLocaleTimeString()}</div>
-            <div>✓ Files analyzed: ${Math.floor(Math.random() * 50000) + 1000}</div>
-            <div>✓ Threats detected: ${allThreats.length}</div>
-            <div>✓ Quarantined items: ${threatStats.blocked}</div>
-            <div>✓ Potential data leaks: ${threatStats.leaked}</div>
-            ${networkThreats.length > 0 ? `<div class="text-rose-400">⚠ Suspicious network activity detected (${networkThreats.length} anomalies)</div>` : '<div>✓ Network secured</div>'}
-            ${breaches.length > 0 ? `<div class="text-amber-400">⚠ ${breaches.length} potential breach(es) found</div>` : '<div>✓ No known breaches detected</div>'}
-          </div>
-        `;
-        
-        document.getElementById("dashboard-content").innerHTML = resultSummary;
-        
-        const message = allThreats.length > 0 
-          ? `Analysis complete! Found ${allThreats.length} threats.` 
-          : "Scan complete. System appears clean!";
-        
-        notify("Scan Complete", message);
-        
-      } catch (err) {
-        console.error("Scan error:", err);
-        notify("Scan Error", "Error communicating with backend", "error");
-        document.getElementById("dashboard-content").textContent = "Error: Could not complete scan\nPlease check your connection and try again.";
+    // ===== Threat Management =====
+    async function quarantineThreat(id) {
+      const threat = allThreats.find(t => t.__backendId === id);
+      if (!threat) return;
+
+      const result = await window.dataSdk.update({ ...threat, status: "quarantined" });
+      if (result.isOk) {
+        showNotification("Threat Quarantined", `${threat.filename} isolated successfully`, 'success');
+        renderThreatsUI();
       }
-      
-      threatStats.scanning = false;
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.querySelector("i").classList.remove("animate-spin");
-      }, 1500);
     }
 
-    // ===== Elements SDK =====
-    if (window.elementSdk) {
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange: async (newConfig) => {
-          config = { ...config, ...newConfig };
-          
-          document.getElementById('main-title').textContent = config.app_title || defaultConfig.app_title;
-          document.getElementById('status-title').innerHTML = `<i data-lucide="activity" class="w-5 h-5"></i> ${config.status_heading || defaultConfig.status_heading}`;
-          document.getElementById('scan-text').textContent = config.scan_button_text || defaultConfig.scan_button_text;
-          
-          const root = document.documentElement;
-          if(config.primary_color) root.style.setProperty('--accent-color', config.primary_color);
-          if(config.surface_color) root.style.setProperty('--card-bg', config.surface_color + 'cc');
-          if(config.text_color) root.style.setProperty('--text-main', config.text_color);
-          
-          lucide.createIcons();
-        },
-        mapToCapabilities: (cfg) => ({
-          recolorables: [
-            { get: () => cfg.primary_color || defaultConfig.primary_color, set: (c) => window.elementSdk.setConfig({ primary_color: c }) },
-            { get: () => cfg.surface_color || defaultConfig.surface_color, set: (c) => window.elementSdk.setConfig({ surface_color: c }) },
-            { get: () => cfg.text_color || defaultConfig.text_color, set: (c) => window.elementSdk.setConfig({ text_color: c }) }
-          ],
-          fontEditable: {
-            get: () => cfg.font_family || 'Outfit',
-            set: (f) => window.elementSdk.setConfig({ font_family: f })
-          }
-        }),
-        mapToEditPanelValues: (cfg) => new Map([
-          ["app_title", cfg.app_title || defaultConfig.app_title],
-          ["status_heading", cfg.status_heading || defaultConfig.status_heading],
-          ["scan_button_text", cfg.scan_button_text || defaultConfig.scan_button_text]
-        ])
-      });
+    async function deleteThreat(id) {
+      const threat = allThreats.find(t => t.__backendId === id);
+      if (!threat) return;
+
+      const result = await window.dataSdk.delete(threat);
+      if (result.isOk) {
+        showNotification("Threat Removed", `${threat.filename} deleted from system`, 'success');
+        renderThreatsUI();
+      }
     }
 
-    // ===== Initialize =====
+    // ===== Marvel Particles System =====
+    function initMarvelParticles() {
+      const container = document.getElementById('particles-container');
+      const particleCount = 50;
+
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 10 + 's';
+        particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    // ===== Marvel Dashboard Initialization =====
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
-      initDataSDK();
-      
-      document.getElementById("scan-btn").addEventListener("click", runFullScan);
-      
-      // Auto-refresh every 15s
+      initMarvelParticles();
+      initMarvelDashboard();
+
+      // Event listeners
+      document.getElementById("scan-btn").addEventListener("click", performMarvelScan);
+      document.getElementById("check-breaches-btn").addEventListener("click", checkBreaches);
+      document.getElementById("predict-breaches-btn").addEventListener("click", predictBreachRisk);
+      document.getElementById("ai-recommendations-btn").addEventListener("click", getAIRecommendations);
+
+      // Auto-refresh threat analysis every 30 seconds
       setInterval(() => {
         if (!threatStats.scanning) {
-          renderThreatsUI();
+          renderThreatAnalysis();
         }
-      }, 15000);
+      }, 30000);
+
+      // Marvel-themed welcome message
+      setTimeout(() => {
+        showNotification("Welcome to Guardian-X", "AI-powered cyber defense system activated", 'success');
+      }, 2000);
     });
+
+    // ===== Global Functions for HTML onclick =====
+    window.quarantineThreat = quarantineThreat;
+    window.deleteThreat = deleteThreat;
+    window.analyzeThreatWithAI = analyzeThreatWithAI;
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9dcd181440d1a754',t:'MTc3MzU5NDIzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

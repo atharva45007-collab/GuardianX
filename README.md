@@ -28,7 +28,9 @@ GuardianX/
 │── requirements.txt           # Python dependencies
 │── Procfile                   # Heroku deployment config
 │── .env                       # Environment variables (API keys)
+│── .env.example               # Environment template
 │── .gitignore                 # Git ignore rules
+│── security_audit.py          # Security configuration checker
 │── README.md                  # This file
 
 
@@ -43,15 +45,19 @@ git clone https://github.com/Guardian-X-048/GuardianX.git
 cd GuardianX
 ```
 
+- Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your actual API keys
+```
+
+- Get API Keys:
+  - **NVIDIA AI**: Visit https://build.nvidia.com/ and get your API key
+  - **HaveIBeenPwned**: Visit https://haveibeenpwned.com/API/Key for breach checking
+
 - Install dependencies:
 ```bash
 pip install -r requirements.txt
-```
-
-- Set up environment variables in `.env`:
-```env
-NVIDIA_API_KEY="your_nvidia_api_key"
-HIBP_API_KEY="your_haveibeenpwned_api_key"
 ```
 
 - Run the backend:
@@ -60,5 +66,12 @@ python GuardianX-Backend/app.py
 ```
 
 - Open `frontend.html` in a web browser to access the dashboard
+
+## 🔐 Security Notes
+- Never commit `.env` files to version control
+- Keep API keys secure and rotate them regularly
+- The application includes security headers and input validation
+- All sensitive data is stored locally in SQLite database
+- Run `python security_audit.py` to check your security configuration
 🎤 Pitch Line
 "GuardianX is not just a tool — it's your AI-powered guardian of the digital realm."
