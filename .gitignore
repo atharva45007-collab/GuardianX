@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Environment variables
+.env
+*.env
+
+# Logs
+*.log
+
+# IDE/Editor configs
+.vscode/
+.idea/
+*.swp
+
+# Node/Frontend (React/JS)
+node_modules/
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
